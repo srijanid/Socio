@@ -116,8 +116,7 @@ The API provides endpoints for user authentication, post management, and more. B
 ![Light Mode](./screenshots/light_mode.png)
 
 ### Dark Mode
-![Dark Mode](![image](https://github.com/user-attachments/assets/49436b5e-cca4-4626-bf63-d22e3fa6dfab)
-)
+![Dark Mode](https://github.com/user-attachments/assets/49436b5e-cca4-4626-bf63-d22e3fa6dfab)
 
 ### User Profile
 ![User Profile](./screenshots/user_profile.png)
