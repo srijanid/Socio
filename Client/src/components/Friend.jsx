@@ -11,7 +11,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
   const navigate = useNavigate();
   const { _id } = useSelector((state) => state.user);
   const token = useSelector((state) => state.token);
-  const friends = useSelector((state) => state.user.friends);
+  const friends = Array.from(useSelector((state) => state.user.friends));
 
   const { palette } = useTheme();
   const primaryLight = palette.primary.light;
@@ -33,7 +33,11 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
       }
     );
     const data = await response.json();
-    dispatch(setFriends({ friends: data }));
+    if (response.ok) {
+      dispatch(setFriends({ friends: data }));
+    } else {
+      console.error("Failed to update friends", data);
+    }
   };
 
   return (
@@ -76,6 +80,7 @@ const Friend = ({ friendId, name, subtitle, userPicturePath }) => {
       </IconButton>
     </FlexBetween>
   );
+
 };
 
 export default Friend;
