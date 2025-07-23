@@ -3,14 +3,16 @@ import {
     FavoriteBorderOutlined,
     FavoriteOutlined,
     ShareOutlined,
+    EditOutlined,
+    DeleteOutline,
   } from "@mui/icons-material";
-  import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
+  import { Box, Divider, IconButton, Typography, useTheme,TextField,Button } from "@mui/material";
   import FlexBetween from "components/FlexBetween";
   import Friend from "components/Friend";
   import WidgetWrapper from "components/WidgetWrapper";
   import { useState } from "react";
   import { useDispatch, useSelector } from "react-redux";
-  import { setPost } from "state";
+  import { setPost,removePost } from "state";
   
   const PostWidget = ({
     postId,
@@ -24,6 +26,9 @@ import {
     comments,
   }) => {
     const [isComments, setIsComments] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editDesc, setEditDesc] = useState(description);
+
     const dispatch = useDispatch();
     const token = useSelector((state) => state.token);
     const loggedInUserId = useSelector((state) => state.user._id);
@@ -46,6 +51,35 @@ import {
       const updatedPost = await response.json();
       dispatch(setPost({ post: updatedPost }));
     };
+
+    const handleDelete = async () => {
+    const confirm = window.confirm("Are you sure you want to delete this post?");
+    if (!confirm) return;
+
+    const response = await fetch(`http://localhost:3001/posts/${postId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      dispatch(removePost({ postId }));
+    }
+  };
+
+  const handleUpdate = async () => {
+    const response = await fetch(`http://localhost:3001/posts/${postId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ description: editDesc }),
+    });
+
+    const updated = await response.json();
+    dispatch(setPost({ post: updated.post }));
+    setIsEditing(false);
+  };
   
     return (
       <WidgetWrapper m="2rem 0">
@@ -55,9 +89,28 @@ import {
           subtitle={location}
           userPicturePath={userPicturePath}
         />
+        {isEditing ? (
+        <Box>
+          <TextField
+            fullWidth
+            multiline
+            value={editDesc}
+            onChange={(e) => setEditDesc(e.target.value)}
+          />
+          <FlexBetween mt="0.5rem">
+            <Button onClick={handleUpdate} variant="contained" size="small">
+              Save
+            </Button>
+            <Button onClick={() => setIsEditing(false)} size="small">
+              Cancel
+            </Button>
+          </FlexBetween>
+        </Box>
+      ) : (
         <Typography color={main} sx={{ mt: "1rem" }}>
           {description}
         </Typography>
+      )}
         {picturePath && (
           <img
             width="100%"
@@ -91,7 +144,18 @@ import {
           <IconButton>
             <ShareOutlined />
           </IconButton>
-        </FlexBetween>
+          {/* 👇 Only show Edit/Delete if post belongs to current user */}
+          {postUserId === loggedInUserId && (
+          <>
+            <IconButton onClick={() => setIsEditing(true)}>
+              <EditOutlined />
+            </IconButton>
+            <IconButton onClick={handleDelete}>
+              <DeleteOutline />
+            </IconButton>
+          </>
+          )}
+  </FlexBetween>
         {isComments && (
           <Box mt="0.5rem">
             {comments.map((comment, i) => (
